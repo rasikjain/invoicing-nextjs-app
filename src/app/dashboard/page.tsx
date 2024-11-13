@@ -5,15 +5,19 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
-  TableHead,
+    TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { db } from '@/db';
+import { Invoices } from '@/db/schema';
 import { CirclePlus } from 'lucide-react';
 import Link from 'next/link';
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const results = await db.select().from(Invoices);
+  console.log(results);
+
   return (
     <main className="flex flex-col justify-center text-center gap-6 max-w-5xl mx-auto my-12">
       <div className="flex justify-between">
@@ -40,23 +44,33 @@ export default function Dashboard() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow>
-            <TableCell className="font-medium text-left p-4">
-              <span className="font-semibold">10/31/2024</span>
-            </TableCell>
-            <TableCell className="font-medium text-left p-4">
-              <span className="font-semibold">F Name</span>
-            </TableCell>
-            <TableCell className="text-left p-4">
-              <span>test@test.com</span>
-            </TableCell>
-            <TableCell className="text-center p-4">
-              <Badge className="rounded-full">Open</Badge>
-            </TableCell>
-            <TableCell className="text-right p-4">
-              <span>$250.00</span>
-            </TableCell>
-          </TableRow>
+          {results.map((invoiceItem) => {
+            return (
+              <TableRow key={invoiceItem.id}>
+                <TableCell className="font-medium text-left p-0">
+                  <Link href={`/invoices/${invoiceItem.id}`} className="block p-4 font-semibold">
+                    {new Date(invoiceItem.createTs).toLocaleDateString()}
+                  </Link>
+                </TableCell>
+                <TableCell className="font-medium text-left p-0">
+                  <Link href={`/invoices/${invoiceItem.id}`} className="block p-4 font-semibold">
+                    F Name
+                  </Link>
+                </TableCell>
+                <TableCell className="text-left p-0">
+                  <Link href={`/invoices/${invoiceItem.id}`} className="block p-4">test@test.com</Link>
+                </TableCell>
+                <TableCell className="text-center p-0">
+                  <Link href={`/invoices/${invoiceItem.id}`} className="block p-4">
+                    <Badge className="rounded-full">{invoiceItem.status}</Badge>
+                  </Link>
+                </TableCell>
+                <TableCell className="text-right p-0">
+                  <Link href={`/invoices/${invoiceItem.id}`} className="block p-4">${(invoiceItem.value / 100).toFixed(2)}</Link>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </main>
