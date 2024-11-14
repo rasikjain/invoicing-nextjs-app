@@ -5,7 +5,7 @@ import { Invoices } from "@/db/schema";
 import { redirect } from "next/navigation";
 
 export async function createInvoiceAction(formData: FormData) {
-    console.log('formdata', formData);
+    // console.log('formdata', formData);
 
     const value = Math.floor(parseFloat(String(formData.get('value'))) * 100);
     const description = formData.get('description') as string;
