@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { db } from '@/db';
-import { Invoices } from '@/db/schema';
+import { Customers, Invoices } from '@/db/schema';
 import { cn } from '@/lib/utils';
 import { auth } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
@@ -15,8 +15,18 @@ export default async function Dashboard() {
 
   if (!userId) return;
 
-  const results = await db.select().from(Invoices).where(eq(Invoices.userId, userId));
+  const results = await db
+    .select()
+    .from(Invoices)
+    .innerJoin(Customers, eq(Invoices.customerId, Customers.id))
+    .where(eq(Invoices.userId, userId));
 
+  const invoices = results?.map(({ invoices, customers }) => {
+    return {
+      ...invoices,
+      customer: customers,
+    };
+  });
   console.log('alfa', results);
 
   return (
@@ -46,7 +56,7 @@ export default async function Dashboard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {results.map((invoiceItem) => {
+            {invoices.map((invoiceItem) => {
               return (
                 <TableRow key={invoiceItem.id}>
                   <TableCell className="font-medium text-left p-0">
@@ -56,12 +66,12 @@ export default async function Dashboard() {
                   </TableCell>
                   <TableCell className="font-medium text-left p-0">
                     <Link href={`/invoices/${invoiceItem.id}`} className="block p-4 font-semibold">
-                      F Name
+                      {invoiceItem.customer.name}
                     </Link>
                   </TableCell>
                   <TableCell className="text-left p-0">
                     <Link href={`/invoices/${invoiceItem.id}`} className="block p-4">
-                      test@test.com
+                      {invoiceItem.customer.email}
                     </Link>
                   </TableCell>
                   <TableCell className="text-center p-0">
